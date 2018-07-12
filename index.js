@@ -5,6 +5,7 @@ const REDIS_TIMEOUT = process.env.REDIS_TIMEOUT || 5 // seconds
 const axios = require('axios')
 const bluebird = require('bluebird')
 const express = require('express')
+const fs = require('fs')
 const redis = require('redis')
 
 // promisify redis client calls (from redis npm package docs)
@@ -30,6 +31,11 @@ function cache(req, res, next) {
       next()
     })
 }
+
+app.get('/', (req, res) => {
+  // res.send('app running. use route <pre>/repos?org=<orgname></pre>')
+  res.send(`<pre>${fs.readFileSync('./README.md', 'utf8')}</pre>`)
+})
 
 app.get('/repos', cache, (req, res) => {
   const org = req.query.org

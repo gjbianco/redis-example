@@ -1,5 +1,7 @@
 # redis-example
 
+https://github.com/gjbianco/redis-example
+
 Very simple example of caching with Redis in Node.
 
 Has a singular route that lists number of repos in provided GitHub Organization. e.g.
