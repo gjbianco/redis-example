@@ -1,5 +1,5 @@
 const PORT = process.env.PORT || 8080
-const REDIS_PORT = process.env.REDIS_PORT || 6379
+const REDIS_URL = process.env.REDIS_URL || '//localhost:6379'
 const REDIS_TIMEOUT = process.env.REDIS_TIMEOUT || 5 // seconds
 
 const axios = require('axios')
@@ -12,19 +12,23 @@ bluebird.promisifyAll(redis.RedisClient.prototype)
 bluebird.promisifyAll(redis.Multi.prototype)
 
 const app = express()
-const redisClient = redis.createClient(REDIS_PORT)
+const redisClient = redis.createClient({
+  url: REDIS_URL
+})
 
 function cache(req, res, next) {
   return redisClient.getAsync(req.query.org)
     .then(data => {
       if (data) {
-        console.log('cache hit:', data)
         res.send(data + ' (cached)')
       } else {
         next()
       }
     })
-    .catch(next)
+    .catch(err => {
+      console.log('cache got error:', err)
+      next()
+    })
 }
 
 app.get('/repos', cache, (req, res) => {
