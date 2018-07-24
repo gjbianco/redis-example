@@ -49,6 +49,12 @@ app.get('/repos', cache, (req, res) => {
     .catch(() => res.status(500).send('could not get repos'))
 })
 
+app.get('/echo', cache, (req, res) => {
+  const org = req.query.org
+  redisClient.setex(org, REDIS_TIMEOUT, org)
+  return res.send(org)
+})
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log('app listening on port', PORT)
 })
