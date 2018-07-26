@@ -62,7 +62,7 @@ app.get('/kill', (req, res) => {
 let healthy = true
 app.get('/toggle-sick', (req, res) => {
   healthy = !healthy
-  res.send('app made ' + healthy ? 'healthy' : 'unhealthy')
+  res.send(`app made ${healthy ? 'healthy' : 'unhealthy'}`)
 })
 
 app.get('/health', (req, res) => {
