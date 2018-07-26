@@ -17,6 +17,16 @@ const redisClient = redis.createClient({
   url: REDIS_URL
 })
 
+let healthy = true
+
+function healthCheck(req, res, next) {
+  if (healthy) {
+    next()
+  } else {
+    res.status(500).send('FAIL')
+  }
+}
+
 function cache(req, res, next) {
   return redisClient.getAsync(req.query.org)
     .then(data => {
@@ -32,12 +42,12 @@ function cache(req, res, next) {
     })
 }
 
-app.get('/', (req, res) => {
+app.get('/', healthCheck, (req, res) => {
   // res.send('app running. use route <pre>/repos?org=<orgname></pre>')
   res.send(`<pre>${fs.readFileSync('./README.md', 'utf8')}</pre>`)
 })
 
-app.get('/repos', cache, (req, res) => {
+app.get('/repos', healthCheck, cache, (req, res) => {
   const org = req.query.org
   return axios.get(`https://api.github.com/orgs/${org}/repos`)
     .then(response => (response.data))
@@ -49,7 +59,7 @@ app.get('/repos', cache, (req, res) => {
     .catch(() => res.status(500).send('could not get repos'))
 })
 
-app.get('/echo', cache, (req, res) => {
+app.get('/echo', healthCheck, cache, (req, res) => {
   const org = req.query.org
   redisClient.setex(org, REDIS_TIMEOUT, org)
   return res.send(org)
@@ -59,18 +69,13 @@ app.get('/kill', (req, res) => {
   process.exit(1)
 })
 
-let healthy = true
 app.get('/toggle-sick', (req, res) => {
   healthy = !healthy
   res.send(`app made ${healthy ? 'healthy' : 'unhealthy'}`)
 })
 
-app.get('/health', (req, res) => {
-  if (healthy) {
-    res.send('OK')
-  } else {
-    res.status(500).send('FAIL')
-  }
+app.get('/health', healthCheck, (req, res) => {
+  res.send('OK')
 })
 
 app.listen(PORT, '0.0.0.0', () => {
