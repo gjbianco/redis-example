@@ -55,6 +55,24 @@ app.get('/echo', cache, (req, res) => {
   return res.send(org)
 })
 
+app.get('/kill', (req, res) => {
+  process.exit(1)
+})
+
+let healthy = true
+app.get('/toggle-sick', (req, res) => {
+  healthy = !healthy
+  res.send('app made ' + healthy ? 'healthy' : 'unhealthy')
+})
+
+app.get('/health', (req, res) => {
+  if (healthy) {
+    res.send('OK')
+  } else {
+    res.status(500).send('FAIL')
+  }
+})
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log('app listening on port', PORT)
 })
